@@ -41,6 +41,8 @@
         button.secondary { background-color: #e0f2fe; color: var(--primary); }
         button.secondary:hover { background-color: #bae6fd; }
         button.success { background-color: var(--success); }
+        button.small-text { background: none; color: var(--primary); width: auto; padding: 0; margin: 0; font-size: 13px; font-weight: normal; text-decoration: underline; border: none; cursor: pointer; display: inline; }
+        button.small-text:hover { color: var(--primary-hover); background: none; }
         
         .flex-row { display: flex; gap: 10px; margin-bottom: 16px; }
         .flex-row button { margin-bottom: 0; }
@@ -74,10 +76,12 @@
         .wizard-item-title { font-weight: 600; margin-bottom: 4px; font-size: 15px; color: var(--text); }
         .wizard-item-desc { font-size: 13px; color: var(--text-light); }
 
-        /* Video Container - Bulletproof Fix */
+        /* Video Container - Modified */
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 8px;}
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        .video-fallback { display: block; text-align: center; margin-bottom: 20px; font-size: 13px; color: var(--primary); text-decoration: underline; }
+        
+        .video-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 13px; }
+        .video-fallback { color: var(--primary); text-decoration: underline; }
 
         /* Tracker */
         .tracker-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 24px; text-align: center; }
@@ -104,7 +108,6 @@
 
 <div id="app-container">
 
-    <!-- Login -->
     <div id="login-screen" class="screen active">
         <div style="text-align: center; margin-top: 60px; margin-bottom: 40px;">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
@@ -116,19 +119,16 @@
         <div id="debug-banner"></div>
     </div>
 
-    <!-- Setup Wizard -->
     <div id="wizard-screen" class="screen">
         <h2>Build Your Custom Routine</h2>
         <p>Select the exercises you want to include in your daily routine.</p>
         
         <div id="wizard-list-container">
-            <!-- Dynamically populated by JS -->
-        </div>
+            </div>
 
         <button onclick="saveRoutine()" type="button" class="success" style="margin-top: 24px;">Save My Routine</button>
     </div>
 
-    <!-- Dashboard -->
     <div id="dashboard-screen" class="screen">
         <div class="header-bar">
             <h1 id="user-greeting">Hello, User</h1>
@@ -159,7 +159,6 @@
         </div>
     </div>
 
-    <!-- Workout -->
     <div id="workout-screen" class="screen">
         <div class="header-bar" style="margin-bottom: 16px;">
             <h3 id="routine-title" style="margin: 0; color: var(--primary);">Daily Routine</h3>
@@ -172,17 +171,18 @@
 
         <h2 id="exercise-title">Exercise Name</h2>
         
-        <!-- The Fix: Empty container filled dynamically to avoid pre-load errors -->
-        <div class="video-container" id="video-container-wrapper">
+        <div class="video-container" id="video-container-wrapper"></div>
+        
+        <div class="video-tools">
+            <a id="video-fallback" class="video-fallback" href="#" target="_blank">Watch directly on YouTube</a>
+            <button onclick="promptCustomVideo()" class="small-text" type="button">✏️ Change Video ID</button>
         </div>
-        <a id="video-fallback" class="video-fallback" href="#" target="_blank">Video blocked? Click here to watch directly on YouTube</a>
 
         <div class="tracker-box" id="tracker-container"></div>
         <ul class="instruction-list" id="exercise-instructions"></ul>
         <button id="next-exercise-btn" onclick="nextExercise()" type="button" style="display: none;">Next Exercise</button>
     </div>
 
-    <!-- Summary -->
     <div id="summary-screen" class="screen">
         <div style="text-align: center; margin-top: 60px;">
             <div style="width: 80px; height: 80px; background: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 40px;">✓</div>
@@ -199,7 +199,7 @@
         var banner = document.getElementById('debug-banner');
         if(banner) {
             banner.style.display = 'block';
-            banner.innerText += "\nError: " + message + " at line " + lineno;
+            banner.innerText += "\\nError: " + message + " at line " + lineno;
         }
         return false;
     };
@@ -230,19 +230,19 @@
         }
     });
 
-    // The Master Exercise Database
+    // Highly Curated Exercise Library - Short, Accurate, Concise Demos
     const exerciseLibrary = [
-        { id: "c1", category: "Core & Pelvis (Posture)", title: "Supine Expiration Vacuum", videoId: "7fYmsoD4cc0", instructions: ["Lie flat, knees bent.", "Inhale normally, exhale completely.", "Push ALL air out until deep abs contract. Hold 3s."], type: "reps", sets: 1, reps: 5 },
-        { id: "c2", category: "Core & Pelvis (Posture)", title: "Posterior Pelvic Tilts", videoId: "vOvRFsGMMqo", instructions: ["Place towel under lower back arch.", "Use lower abs to tilt pelvis backward and crush towel.", "Hold max pressure for 5s."], type: "reps", sets: 1, reps: 10 },
-        { id: "c3", category: "Core & Pelvis (Posture)", title: "Regressed Deadbug (Heel Taps)", videoId: "CGuRq6btSbU", instructions: ["Legs tabletop (90 deg). Lower back pinned FLAT to floor.", "Lower right heel to tap floor, return. Alternate legs.", "CRITICAL: If lower back lifts, stop and reset."], type: "sets_reps", sets: 3, reps: "8 / side" },
-        { id: "c4", category: "Core & Pelvis (Posture)", title: "The Bird-Dog", videoId: "jrK_rA4ATeg", instructions: ["Hands and knees tabletop. Eyes down.", "Extend opposite arm and leg parallel to floor.", "CRITICAL: Kick straight back, NOT up."], type: "sets_reps", sets: 3, reps: "6 / side" },
-        { id: "c5", category: "Core & Pelvis (Posture)", title: "Glute Bridge", videoId: "bpUudcsZQ8g", instructions: ["Lie back, knees bent. Flatten back first.", "Drive through heels to lift hips.", "Squeeze glutes hard at top for 2s."], type: "sets_reps", sets: 3, reps: "12-15" },
-        { id: "c6", category: "Core & Pelvis (Posture)", title: "Kneeling Hip Flexor Stretch", videoId: "kGPVyMPpEQo", instructions: ["Kneel on right knee. Squeeze right glute to tuck tailbone.", "Keep spine vertical, shift hips forward 1-2 inches.", "Hold 30s."], type: "timer_sets", sets: 2, time: 30 },
+        { id: "c1", category: "Core & Pelvis (Posture)", title: "Supine Expiration Vacuum", videoId: "vB_K7Tta-E4", instructions: ["Lie flat, knees bent.", "Inhale normally, exhale completely.", "Push ALL air out until deep abs contract. Hold 3s."], type: "reps", sets: 1, reps: 5 },
+        { id: "c2", category: "Core & Pelvis (Posture)", title: "Posterior Pelvic Tilts", videoId: "1ABX1NeGgA8", instructions: ["Place towel under lower back arch.", "Use lower abs to tilt pelvis backward and crush towel.", "Hold max pressure for 5s."], type: "reps", sets: 1, reps: 10 },
+        { id: "c3", category: "Core & Pelvis (Posture)", title: "Regressed Deadbug (Heel Taps)", videoId: "g_BYB0roEd0", instructions: ["Legs tabletop (90 deg). Lower back pinned FLAT to floor.", "Lower right heel to tap floor, return. Alternate legs.", "CRITICAL: If lower back lifts, stop and reset."], type: "sets_reps", sets: 3, reps: "8 / side" },
+        { id: "c4", category: "Core & Pelvis (Posture)", title: "The Bird-Dog", videoId: "qEF-hyBSLWU", instructions: ["Hands and knees tabletop. Eyes down.", "Extend opposite arm and leg parallel to floor.", "CRITICAL: Kick straight back, NOT up."], type: "sets_reps", sets: 3, reps: "6 / side" },
+        { id: "c5", category: "Core & Pelvis (Posture)", title: "Glute Bridge", videoId: "8bbE64NuDTU", instructions: ["Lie back, knees bent. Flatten back first.", "Drive through heels to lift hips.", "Squeeze glutes hard at top for 2s."], type: "sets_reps", sets: 3, reps: "12-15" },
+        { id: "c6", category: "Core & Pelvis (Posture)", title: "Kneeling Hip Flexor Stretch", videoId: "YQmsuwAWEcM", instructions: ["Kneel on right knee. Squeeze right glute to tuck tailbone.", "Keep spine vertical, shift hips forward 1-2 inches.", "Hold 30s."], type: "timer_sets", sets: 2, time: 30 },
         
-        { id: "bh1", category: "Upper Back & Neck (Back Hump)", title: "Chin Tucks", videoId: "w7n13Q2pP9Y", instructions: ["Sit or stand tall. Look straight ahead.", "Without tilting your head up or down, pull your chin straight back (like making a double chin).", "Hold for 3 seconds and release. Releases neck tension."], type: "reps", sets: 1, reps: 10 },
-        { id: "bh2", category: "Upper Back & Neck (Back Hump)", title: "Wall Angels", videoId: "rRGuXEUH05I", instructions: ["Stand with your heels, glutes, upper back, and head against a wall.", "Raise arms to 90 degrees, pinning elbows and wrists to wall.", "Slowly slide arms up and down the wall without losing contact."], type: "sets_reps", sets: 2, reps: 10 },
+        { id: "bh1", category: "Upper Back & Neck (Back Hump)", title: "Chin Tucks", videoId: "XzTtb4N6Lms", instructions: ["Sit or stand tall. Look straight ahead.", "Without tilting your head up or down, pull your chin straight back (like making a double chin).", "Hold for 3 seconds and release. Releases neck tension."], type: "reps", sets: 1, reps: 10 },
+        { id: "bh2", category: "Upper Back & Neck (Back Hump)", title: "Wall Angels", videoId: "W_qU93p4QG8", instructions: ["Stand with your heels, glutes, upper back, and head against a wall.", "Raise arms to 90 degrees, pinning elbows and wrists to wall.", "Slowly slide arms up and down the wall without losing contact."], type: "sets_reps", sets: 2, reps: 10 },
         
-        { id: "sc1", category: "Spine Mobility (Scoliosis Focus)", title: "Cat-Cow Stretch", videoId: "kqnua4KKvXI", instructions: ["Start on hands and knees.", "Inhale, drop belly toward floor and look up (Cow).", "Exhale, push the floor away and round spine up to ceiling (Cat). Move slowly to find tight spots."], type: "reps", sets: 1, reps: 10 },
+        { id: "sc1", category: "Spine Mobility (Scoliosis Focus)", title: "Cat-Cow Stretch", videoId: "cxkdNhWEPtY", instructions: ["Start on hands and knees.", "Inhale, drop belly toward floor and look up (Cow).", "Exhale, push the floor away and round spine up to ceiling (Cat). Move slowly to find tight spots."], type: "reps", sets: 1, reps: 10 },
         { id: "sc2", category: "Spine Mobility (Scoliosis Focus)", title: "Child's Pose with Side Reach", videoId: "GZg5iHhX_L8", instructions: ["Sit back on your heels in a wide-knee child's pose. Reach arms far forward.", "Walk both hands over to the right side to stretch the left side of your spine. Hold.", "Walk hands to the left side to stretch the right side."], type: "timer_sets", sets: 2, time: 30 }
     ];
 
@@ -264,7 +264,7 @@
                 return;
             }
             currentUser = usernameInput;
-            const storageKey = 'core_v6_' + currentUser; 
+            const storageKey = 'core_v7_' + currentUser; 
             
             let stored = safeGetItem(storageKey);
             
@@ -275,11 +275,12 @@
             }
 
             if (!userData) {
-                userData = { history: [], routineIds: [] };
+                userData = { history: [], routineIds: [], customVideos: {} };
             }
 
             if (!Array.isArray(userData.history)) userData.history = [];
             if (!Array.isArray(userData.routineIds)) userData.routineIds = [];
+            if (!userData.customVideos) userData.customVideos = {};
 
             document.getElementById('user-greeting').innerText = 'Hello, ' + currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
 
@@ -306,7 +307,7 @@
 
     function saveUserData() {
         if(currentUser && userData) {
-            safeSetItem('core_v6_' + currentUser, JSON.stringify(userData));
+            safeSetItem('core_v7_' + currentUser, JSON.stringify(userData));
         }
     }
 
@@ -490,7 +491,7 @@
     function quitRoutine() {
         if(confirm("Quit current routine? Progress won't be saved.")) {
             clearInterval(timerInterval);
-            document.getElementById('video-container-wrapper').innerHTML = ""; // Stop video audio
+            document.getElementById('video-container-wrapper').innerHTML = ""; 
             showScreen('dashboard-screen');
         }
     }
@@ -502,14 +503,15 @@
         
         document.getElementById('exercise-title').innerText = (currentIndex + 1) + ". " + ex.title;
         
-        // Error 153 Bulletproof Fix: Dynamically create the iframe so it doesn't cache bad origins
-        const videoWrapper = document.getElementById('video-container-wrapper');
-        // Using nocookie domain, and explicitly adding origins to prevent the 153 restriction
-        const embedUrl = "https://www.youtube-nocookie.com/embed/" + ex.videoId + "?rel=0&modestbranding=1&controls=1&showinfo=0&playsinline=1";
+        // Use custom video if user set one, otherwise default library video
+        const activeVideoId = userData.customVideos[ex.id] || ex.videoId;
         
+        // Dynamically create iframe for 153 fix
+        const videoWrapper = document.getElementById('video-container-wrapper');
+        const embedUrl = "https://www.youtube-nocookie.com/embed/" + activeVideoId + "?rel=0&modestbranding=1&controls=1&showinfo=0&playsinline=1";
         videoWrapper.innerHTML = `<iframe src="${embedUrl}" title="Exercise Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
         
-        document.getElementById('video-fallback').href = "https://www.youtube.com/watch?v=" + ex.videoId;
+        document.getElementById('video-fallback').href = "https://www.youtube.com/watch?v=" + activeVideoId;
         
         document.getElementById('workout-progress').style.width = (((currentIndex) / activeRoutine.length) * 100) + "%";
         
@@ -522,6 +524,27 @@
         document.getElementById('next-exercise-btn').style.display = 'none';
         
         renderTracker(ex);
+    }
+    
+    function extractVideoId(url) {
+        let match = url.match(/(?:youtube\\.com\\/(?:[^/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=)|youtu\\.be\\/|youtube\\.com\\/shorts\\/)([^"&?\\/\\s]{11})/i);
+        return match ? match[1] : null;
+    }
+
+    function promptCustomVideo() {
+        const ex = activeRoutine[currentIndex];
+        let newUrl = prompt("Found a better video for " + ex.title + "?\\nPaste the YouTube URL or Video ID here:", "");
+        if (newUrl === null) return; 
+        
+        let newId = extractVideoId(newUrl) || newUrl.trim();
+        
+        if (newId && newId.length === 11) {
+            userData.customVideos[ex.id] = newId;
+            saveUserData();
+            renderExercise(); 
+        } else if (newId.length > 0) {
+            alert("Invalid YouTube Link. Make sure you pasted the full URL or the exact 11-character Video ID.");
+        }
     }
 
     function renderTracker(ex) {
