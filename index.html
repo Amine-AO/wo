@@ -76,7 +76,7 @@
         .wizard-item-title { font-weight: 600; margin-bottom: 4px; font-size: 15px; color: var(--text); }
         .wizard-item-desc { font-size: 13px; color: var(--text-light); }
 
-        /* Video Container - Modified */
+        /* Video Container */
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 8px;}
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
         
@@ -100,8 +100,6 @@
 
         .instruction-list { padding-left: 20px; margin-bottom: 20px; font-size: 14px; }
         .instruction-list li { margin-bottom: 8px; }
-
-        #debug-banner { display: none; background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 12px; border-radius: 8px; margin-top: 16px; font-size: 13px; font-family: monospace; white-space: pre-wrap; word-break: break-all;}
     </style>
 </head>
 <body>
@@ -114,17 +112,14 @@
             <h1 style="margin-top: 16px;">Core & Posture Tracker</h1>
         </div>
         <input type="text" id="username-input" placeholder="Enter your username" autocomplete="off" autocorrect="off" autocapitalize="none">
-        <button onclick="login()" type="button" id="login-btn">Enter App</button>
-        
-        <div id="debug-banner"></div>
+        <button onclick="login()" type="button">Enter App</button>
     </div>
 
     <div id="wizard-screen" class="screen">
         <h2>Build Your Custom Routine</h2>
         <p>Select the exercises you want to include in your daily routine.</p>
         
-        <div id="wizard-list-container">
-            </div>
+        <div id="wizard-list-container"></div>
 
         <button onclick="saveRoutine()" type="button" class="success" style="margin-top: 24px;">Save My Routine</button>
     </div>
@@ -187,7 +182,7 @@
         <div style="text-align: center; margin-top: 60px;">
             <div style="width: 80px; height: 80px; background: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 40px;">✓</div>
             <h1>Workout Complete!</h1>
-            <p>Your progress has been saved.</p>
+            <p>Your progress has been saved for this session.</p>
             <button onclick="returnToDashboard()" type="button" style="margin-top: 24px;">Return to Dashboard</button>
         </div>
     </div>
@@ -195,57 +190,8 @@
 </div>
 
 <script>
-    window.onerror = function(message, source, lineno, colno, error) {
-        var banner = document.getElementById('debug-banner');
-        if(banner) {
-            banner.style.display = 'block';
-            banner.innerText += "\\nError: " + message + " at line " + lineno;
-        }
-        return false;
-    };
-
-    let memoryStore = {};
-    function safeGetItem(key) {
-        try {
-            if (typeof window !== 'undefined' && window.localStorage) {
-                return window.localStorage.getItem(key) || memoryStore[key];
-            }
-        } catch (e) {}
-        return memoryStore[key] || null;
-    }
-
-    function safeSetItem(key, value) {
-        memoryStore[key] = value;
-        try {
-            if (typeof window !== 'undefined' && window.localStorage) {
-                window.localStorage.setItem(key, value);
-            }
-        } catch (e) {}
-    }
-
-    document.getElementById("username-input").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            login();
-        }
-    });
-
-    // Highly Curated Exercise Library - Short, Accurate, Concise Demos
-    const exerciseLibrary = [
-        { id: "c1", category: "Core & Pelvis (Posture)", title: "Supine Expiration Vacuum", videoId: "vB_K7Tta-E4", instructions: ["Lie flat, knees bent.", "Inhale normally, exhale completely.", "Push ALL air out until deep abs contract. Hold 3s."], type: "reps", sets: 1, reps: 5 },
-        { id: "c2", category: "Core & Pelvis (Posture)", title: "Posterior Pelvic Tilts", videoId: "1ABX1NeGgA8", instructions: ["Place towel under lower back arch.", "Use lower abs to tilt pelvis backward and crush towel.", "Hold max pressure for 5s."], type: "reps", sets: 1, reps: 10 },
-        { id: "c3", category: "Core & Pelvis (Posture)", title: "Regressed Deadbug (Heel Taps)", videoId: "g_BYB0roEd0", instructions: ["Legs tabletop (90 deg). Lower back pinned FLAT to floor.", "Lower right heel to tap floor, return. Alternate legs.", "CRITICAL: If lower back lifts, stop and reset."], type: "sets_reps", sets: 3, reps: "8 / side" },
-        { id: "c4", category: "Core & Pelvis (Posture)", title: "The Bird-Dog", videoId: "qEF-hyBSLWU", instructions: ["Hands and knees tabletop. Eyes down.", "Extend opposite arm and leg parallel to floor.", "CRITICAL: Kick straight back, NOT up."], type: "sets_reps", sets: 3, reps: "6 / side" },
-        { id: "c5", category: "Core & Pelvis (Posture)", title: "Glute Bridge", videoId: "8bbE64NuDTU", instructions: ["Lie back, knees bent. Flatten back first.", "Drive through heels to lift hips.", "Squeeze glutes hard at top for 2s."], type: "sets_reps", sets: 3, reps: "12-15" },
-        { id: "c6", category: "Core & Pelvis (Posture)", title: "Kneeling Hip Flexor Stretch", videoId: "YQmsuwAWEcM", instructions: ["Kneel on right knee. Squeeze right glute to tuck tailbone.", "Keep spine vertical, shift hips forward 1-2 inches.", "Hold 30s."], type: "timer_sets", sets: 2, time: 30 },
-        
-        { id: "bh1", category: "Upper Back & Neck (Back Hump)", title: "Chin Tucks", videoId: "XzTtb4N6Lms", instructions: ["Sit or stand tall. Look straight ahead.", "Without tilting your head up or down, pull your chin straight back (like making a double chin).", "Hold for 3 seconds and release. Releases neck tension."], type: "reps", sets: 1, reps: 10 },
-        { id: "bh2", category: "Upper Back & Neck (Back Hump)", title: "Wall Angels", videoId: "W_qU93p4QG8", instructions: ["Stand with your heels, glutes, upper back, and head against a wall.", "Raise arms to 90 degrees, pinning elbows and wrists to wall.", "Slowly slide arms up and down the wall without losing contact."], type: "sets_reps", sets: 2, reps: 10 },
-        
-        { id: "sc1", category: "Spine Mobility (Scoliosis Focus)", title: "Cat-Cow Stretch", videoId: "cxkdNhWEPtY", instructions: ["Start on hands and knees.", "Inhale, drop belly toward floor and look up (Cow).", "Exhale, push the floor away and round spine up to ceiling (Cat). Move slowly to find tight spots."], type: "reps", sets: 1, reps: 10 },
-        { id: "sc2", category: "Spine Mobility (Scoliosis Focus)", title: "Child's Pose with Side Reach", videoId: "GZg5iHhX_L8", instructions: ["Sit back on your heels in a wide-knee child's pose. Reach arms far forward.", "Walk both hands over to the right side to stretch the left side of your spine. Hold.", "Walk hands to the left side to stretch the right side."], type: "timer_sets", sets: 2, time: 30 }
-    ];
-
+    // Pure memory storage. No localStorage means no security errors on file://
+    let database = {};
     let currentUser = null;
     let userData = null;
     let activeRoutine = [];
@@ -254,396 +200,7 @@
     let timerInterval = null;
     let timeLeft = 0;
 
-    function login() {
-        document.getElementById('debug-banner').style.display = 'none'; 
-        
-        try {
-            const usernameInput = document.getElementById('username-input').value.trim().toLowerCase();
-            if (!usernameInput) {
-                alert('Please enter a username to continue.');
-                return;
-            }
-            currentUser = usernameInput;
-            const storageKey = 'core_v7_' + currentUser; 
-            
-            let stored = safeGetItem(storageKey);
-            
-            try {
-                userData = stored ? JSON.parse(stored) : null;
-            } catch(e) {
-                userData = null;
-            }
-
-            if (!userData) {
-                userData = { history: [], routineIds: [], customVideos: {} };
-            }
-
-            if (!Array.isArray(userData.history)) userData.history = [];
-            if (!Array.isArray(userData.routineIds)) userData.routineIds = [];
-            if (!userData.customVideos) userData.customVideos = {};
-
-            document.getElementById('user-greeting').innerText = 'Hello, ' + currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
-
-            if (userData.routineIds.length === 0) {
-                openWizard();
-            } else {
-                updateDashboard();
-                showScreen('dashboard-screen');
-            }
-        } catch(err) {
-            var banner = document.getElementById('debug-banner');
-            banner.style.display = 'block';
-            banner.innerText = "Login Failed: " + err.message;
-        }
-    }
-
-    function logout() {
-        currentUser = null;
-        userData = null;
-        document.getElementById('username-input').value = '';
-        document.getElementById('debug-banner').style.display = 'none';
-        showScreen('login-screen');
-    }
-
-    function saveUserData() {
-        if(currentUser && userData) {
-            safeSetItem('core_v7_' + currentUser, JSON.stringify(userData));
-        }
-    }
-
-    /* WIZARD LOGIC */
-    function openWizard() {
-        try {
-            const container = document.getElementById('wizard-list-container');
-            container.innerHTML = '';
-            
-            let grouped = {};
-            for(let i=0; i<exerciseLibrary.length; i++) {
-                let ex = exerciseLibrary[i];
-                if(!grouped[ex.category]) grouped[ex.category] = [];
-                grouped[ex.category].push(ex);
-            }
-
-            let htmlString = '';
-            for (let category in grouped) {
-                let cleanCatName = category.replace(/[^a-zA-Z0-9]/g, '');
-                htmlString += `
-                    <div class="wizard-category-header">
-                        <div class="wizard-category-title">${category}</div>
-                        <button type="button" class="wizard-category-toggle" onclick="toggleCategory('${cleanCatName}')">Select All</button>
-                    </div>
-                `;
-                
-                let exercises = grouped[category];
-                
-                for(let j=0; j<exercises.length; j++) {
-                    let ex = exercises[j];
-                    let isChecked = userData.routineIds.indexOf(ex.id) !== -1 ? 'checked' : '';
-                    let desc = (ex.sets > 1 ? ex.sets + ' Sets • ' : '') + (ex.type === 'timer_sets' ? ex.time + 's Hold' : ex.reps + ' Reps');
-                    
-                    htmlString += `
-                        <label class="wizard-item">
-                            <input type="checkbox" value="${ex.id}" class="ex-checkbox cat-${cleanCatName}" ${isChecked}>
-                            <div class="wizard-item-details">
-                                <div class="wizard-item-title">${ex.title}</div>
-                                <div class="wizard-item-desc">${desc}</div>
-                            </div>
-                        </label>
-                    `;
-                }
-            }
-            container.innerHTML = htmlString;
-            showScreen('wizard-screen');
-        } catch(err) {
-            alert("Error loading wizard: " + err.message);
-        }
-    }
-
-    function toggleCategory(catName) {
-        const checkboxes = document.querySelectorAll('.cat-' + catName);
-        let allChecked = true;
-        for(let i=0; i<checkboxes.length; i++) {
-            if(!checkboxes[i].checked) {
-                allChecked = false;
-                break;
-            }
-        }
-        for(let i=0; i<checkboxes.length; i++) {
-            checkboxes[i].checked = !allChecked;
-        }
-    }
-
-    function saveRoutine() {
-        try {
-            let checkboxes = document.querySelectorAll('.ex-checkbox');
-            let selectedIds = [];
-            for(let i=0; i<checkboxes.length; i++) {
-                if(checkboxes[i].checked) {
-                    selectedIds.push(checkboxes[i].value);
-                }
-            }
-            
-            if (selectedIds.length === 0) {
-                alert("Please select at least one exercise.");
-                return;
-            }
-
-            userData.routineIds = selectedIds;
-            saveUserData();
-            
-            updateDashboard();
-            showScreen('dashboard-screen');
-        } catch(err) {
-            alert("Error saving routine: " + err.message);
-        }
-    }
-
-    /* DASHBOARD LOGIC */
-    function updateDashboard() {
-        document.getElementById('stat-workouts').innerText = userData.history.length;
-        document.getElementById('routine-summary').innerText = userData.routineIds.length + ' exercises selected';
-        renderCalendar();
-        
-        let streak = 0;
-        if(userData.history.length > 0) {
-            let uniqueDates = [];
-            for(let i=0; i<userData.history.length; i++) {
-                if(uniqueDates.indexOf(userData.history[i]) === -1) {
-                    uniqueDates.push(userData.history[i]);
-                }
-            }
-            uniqueDates.sort(function(a, b){ return new Date(b) - new Date(a); });
-            
-            let today = new Date(); 
-            today.setHours(0,0,0,0);
-            let lastLog = new Date(uniqueDates[0]); 
-            lastLog.setHours(0,0,0,0);
-            
-            let diffDays = Math.round((today - lastLog) / 86400000);
-            
-            if(diffDays <= 1) {
-                streak = 1;
-                for(let i=0; i<uniqueDates.length-1; i++) {
-                    let d1 = new Date(uniqueDates[i]); d1.setHours(0,0,0,0);
-                    let d2 = new Date(uniqueDates[i+1]); d2.setHours(0,0,0,0);
-                    if(Math.round((d1 - d2) / 86400000) === 1) {
-                        streak++;
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
-        document.getElementById('stat-streak').innerText = streak;
-    }
-
-    function renderCalendar() {
-        const cal = document.getElementById('week-calendar');
-        cal.innerHTML = '';
-        const today = new Date();
-        const currentDay = today.getDay(); 
-        const diff = today.getDate() - currentDay + (currentDay === 0 ? -6 : 1); 
-        const monday = new Date(today.setDate(diff));
-        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        
-        let htmlString = '';
-        for(let i=0; i<7; i++) {
-            let d = new Date(monday); 
-            d.setDate(monday.getDate() + i);
-            let dateStr = d.toDateString();
-            let isCompleted = userData.history.indexOf(dateStr) !== -1;
-            let isToday = dateStr === new Date().toDateString();
-            
-            let classes = "day-col" + (isCompleted ? " completed" : "") + (isToday ? " today" : "");
-            htmlString += `
-                <div class="${classes}">
-                    <div class="day-name">${dayNames[i]}</div>
-                    <div class="day-circle">${isCompleted ? '✓' : d.getDate()}</div>
-                </div>`;
-        }
-        cal.innerHTML = htmlString;
-    }
-
-    /* WORKOUT LOGIC */
-    function startWorkout() {
-        activeRoutine = [];
-        for(let i=0; i<userData.routineIds.length; i++) {
-            let id = userData.routineIds[i];
-            for(let j=0; j<exerciseLibrary.length; j++) {
-                if(exerciseLibrary[j].id === id) {
-                    activeRoutine.push(exerciseLibrary[j]);
-                    break;
-                }
-            }
-        }
-
-        if (activeRoutine.length === 0) {
-            alert("No valid exercises found in your routine. Please select them again.");
-            openWizard();
-            return;
-        }
-
-        currentIndex = 0;
-        showScreen('workout-screen');
-        renderExercise();
-    }
-
-    function quitRoutine() {
-        if(confirm("Quit current routine? Progress won't be saved.")) {
-            clearInterval(timerInterval);
-            document.getElementById('video-container-wrapper').innerHTML = ""; 
-            showScreen('dashboard-screen');
-        }
-    }
-
-    function renderExercise() {
-        clearInterval(timerInterval);
-        currentSet = 1;
-        const ex = activeRoutine[currentIndex];
-        
-        document.getElementById('exercise-title').innerText = (currentIndex + 1) + ". " + ex.title;
-        
-        // Use custom video if user set one, otherwise default library video
-        const activeVideoId = userData.customVideos[ex.id] || ex.videoId;
-        
-        // Dynamically create iframe for 153 fix
-        const videoWrapper = document.getElementById('video-container-wrapper');
-        const embedUrl = "https://www.youtube-nocookie.com/embed/" + activeVideoId + "?rel=0&modestbranding=1&controls=1&showinfo=0&playsinline=1";
-        videoWrapper.innerHTML = `<iframe src="${embedUrl}" title="Exercise Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-        
-        document.getElementById('video-fallback').href = "https://www.youtube.com/watch?v=" + activeVideoId;
-        
-        document.getElementById('workout-progress').style.width = (((currentIndex) / activeRoutine.length) * 100) + "%";
-        
-        let instHtml = '';
-        for(let i=0; i<ex.instructions.length; i++){
-            instHtml += "<li>" + ex.instructions[i] + "</li>";
-        }
-        document.getElementById('exercise-instructions').innerHTML = instHtml;
-        
-        document.getElementById('next-exercise-btn').style.display = 'none';
-        
-        renderTracker(ex);
-    }
-    
-    function extractVideoId(url) {
-        let match = url.match(/(?:youtube\\.com\\/(?:[^/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=)|youtu\\.be\\/|youtube\\.com\\/shorts\\/)([^"&?\\/\\s]{11})/i);
-        return match ? match[1] : null;
-    }
-
-    function promptCustomVideo() {
-        const ex = activeRoutine[currentIndex];
-        let newUrl = prompt("Found a better video for " + ex.title + "?\\nPaste the YouTube URL or Video ID here:", "");
-        if (newUrl === null) return; 
-        
-        let newId = extractVideoId(newUrl) || newUrl.trim();
-        
-        if (newId && newId.length === 11) {
-            userData.customVideos[ex.id] = newId;
-            saveUserData();
-            renderExercise(); 
-        } else if (newId.length > 0) {
-            alert("Invalid YouTube Link. Make sure you pasted the full URL or the exact 11-character Video ID.");
-        }
-    }
-
-    function renderTracker(ex) {
-        const c = document.getElementById('tracker-container');
-        let dotsHtml = '';
-        if(ex.sets > 1) {
-            dotsHtml = '<div class="set-dots">';
-            for(let i=0; i<ex.sets; i++) {
-                dotsHtml += '<div class="dot ' + (i===0 ? 'active' : '') + '" id="dot-'+(i+1)+'"></div>';
-            }
-            dotsHtml += '</div><div style="margin-bottom: 15px; color: var(--text-light);">';
-        }
-
-        if (ex.type === 'sets_reps' || ex.type === 'reps') {
-            let html = '<div class="rep-display">Target: ' + ex.reps + '</div>';
-            if(ex.sets > 1) html += dotsHtml + 'Set <span id="current-set-label">1</span> of ' + ex.sets + '</div>';
-            html += '<button id="action-btn" onclick="completeSet()" type="button">Complete Set</button>';
-            c.innerHTML = html;
-        } else {
-            timeLeft = ex.time;
-            let html = '<div class="rep-display">Target: ' + ex.time + 's Hold</div>';
-            if(ex.sets > 1) html += dotsHtml + 'Side <span id="current-set-label">1</span> of ' + ex.sets + '</div>';
-            html += '<div class="timer-display" id="timer-display">' + timeLeft + '</div>';
-            html += '<button id="action-btn" onclick="startTimer()" type="button">Start Timer</button>';
-            c.innerHTML = html;
-        }
-    }
-
-    function completeSet() {
-        const ex = activeRoutine[currentIndex];
-        if (currentSet < ex.sets) {
-            currentSet++;
-            document.getElementById('dot-' + currentSet).classList.add('active');
-            document.getElementById('current-set-label').innerText = currentSet;
-        } else {
-            document.getElementById('action-btn').style.display = 'none';
-            document.getElementById('next-exercise-btn').style.display = 'block';
-            document.getElementById('next-exercise-btn').classList.add('success');
-        }
-    }
-
-    function startTimer() {
-        const btn = document.getElementById('action-btn');
-        btn.disabled = true; 
-        btn.innerText = "Holding...";
-        const ex = activeRoutine[currentIndex];
-        timeLeft = ex.time;
-        document.getElementById('timer-display').innerText = timeLeft;
-
-        timerInterval = setInterval(function() {
-            timeLeft--;
-            document.getElementById('timer-display').innerText = timeLeft;
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                btn.disabled = false;
-                if (currentSet < ex.sets) {
-                    currentSet++; 
-                    btn.innerText = "Start Next Side Timer";
-                    document.getElementById('dot-' + currentSet).classList.add('active');
-                    document.getElementById('current-set-label').innerText = currentSet;
-                } else {
-                    btn.style.display = 'none';
-                    document.getElementById('next-exercise-btn').style.display = 'block';
-                    document.getElementById('next-exercise-btn').classList.add('success');
-                }
-            }
-        }, 1000);
-    }
-
-    function nextExercise() {
-        currentIndex++;
-        if (currentIndex >= activeRoutine.length) {
-            finishRoutine();
-        } else {
-            renderExercise();
-        }
-    }
-
-    function finishRoutine() {
-        document.getElementById('video-container-wrapper').innerHTML = "";
-        const todayStr = new Date().toDateString();
-        userData.history.push(todayStr);
-        saveUserData();
-        showScreen('summary-screen');
-    }
-
-    function returnToDashboard() {
-        updateDashboard();
-        showScreen('dashboard-screen');
-    }
-
-    function showScreen(id) {
-        let screens = document.querySelectorAll('.screen');
-        for(let i=0; i<screens.length; i++) {
-            screens[i].classList.remove('active');
-        }
-        document.getElementById(id).classList.add('active');
-        window.scrollTo(0, 0);
-    }
-</script>
-</body>
-</html>
+    const exerciseLibrary = [
+        { id: "c1", category: "Core & Pelvis (Posture)", title: "Supine Expiration Vacuum", videoId: "vB_K7Tta-E4", instructions: ["Lie flat, knees bent.", "Inhale normally, exhale completely.", "Push ALL air out until deep abs contract. Hold 3s."], type: "reps", sets: 1, reps: 5 },
+        { id: "c2", category: "Core & Pelvis (Posture)", title: "Posterior Pelvic Tilts", videoId: "1ABX1NeGgA8", instructions: ["Place towel under lower back arch.", "Use lower abs to tilt pelvis backward and crush towel.", "Hold max pressure for 5s."], type: "reps", sets: 1, reps: 10 },
+        { id: "c3", category: "Core & Pelvis (Posture)", title: "Regressed Deadbug (Heel Taps
